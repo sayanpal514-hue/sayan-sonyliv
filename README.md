@@ -4,6 +4,8 @@
 
 ### by **Sayan Pal**
 
+| 🌐 Live Website | [SonyLiv Live — Sayan](https://sayan-sonyliv-live.vercel.app/))  |
+
 ✨ A high-availability, fully automated data synchronization project ensuring the SonyLiv live events list is always fresh and reliable.
 
 ---
