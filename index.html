@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>SonyLiv Live — Sayan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.12/hls.min.js"></script>
+    <style>
+        :root {
+            --bg: #080408;
+            --surface: #100810;
+            --card: #160d18;
+            --card2: #1c1020;
+            --accent: #e8003d;
+            --accent2: #ff6b35;
+            --gold: #f4b400;
+            --red: #ff3b3b;
+            --green: #00e676;
+            --muted: #4a2e52;
+            --text: #ecd8f0;
+            --text2: #9070a0;
+            --border: rgba(232,0,61,0.15);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse 65% 45% at 0% 0%, rgba(232,0,61,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 55% at 100% 100%, rgba(255,107,53,0.06) 0%, transparent 60%);
+        }
+
+        /* TICKER */
+        .ticker-wrap { overflow: hidden; background: linear-gradient(90deg, var(--accent), var(--accent2)); padding: 6px 0; position: relative; z-index: 10; }
+        .ticker { display: flex; white-space: nowrap; animation: ticker 28s linear infinite; }
+        .ticker span { color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; padding: 0 36px; text-transform: uppercase; }
+        @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+        /* HEADER */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(8,4,8,0.95);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .logo {
+            width: 44px; height: 44px; flex-shrink: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Bebas Neue', sans-serif; font-size: 13px;
+            color: #fff; letter-spacing: 1px;
+            box-shadow: 0 0 18px rgba(232,0,61,0.4);
+            position: relative;
+        }
+        .logo-ring {
+            position: absolute; inset: -4px; border-radius: 14px;
+            border: 2px solid var(--accent); opacity: 0;
+            animation: ringPulse 3s ease-out infinite;
+        }
+        @keyframes ringPulse { 0%{opacity:0.6;transform:scale(1)} 100%{opacity:0;transform:scale(1.3)} }
+        .brand-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: #fff; line-height: 1; }
+        .brand-title span { color: var(--accent); }
+        .brand-sub { font-size: 10px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+
+        .live-pill {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(232,0,61,0.12); border: 1px solid rgba(232,0,61,0.3);
+            padding: 4px 11px; border-radius: 20px;
+            font-size: 10px; font-weight: 700; color: #ff5577;
+            letter-spacing: 1.5px; text-transform: uppercase;
+        }
+        .live-dot { width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: blink 1.2s infinite; box-shadow: 0 0 5px var(--red); }
+        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0.2} }
+
+        .tg-btn {
+            display: flex; align-items: center; gap: 7px;
+            background: linear-gradient(135deg, #2196F3, #1565C0);
+            border: none; color: #fff; padding: 8px 14px; border-radius: 9px;
+            font-size: 12px; font-weight: 600; cursor: pointer;
+            font-family: 'Outfit', sans-serif; transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(33,150,243,0.35);
+        }
+        .tg-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(33,150,243,0.55); }
+        .tg-btn span { display: none; }
+        @media(min-width:480px){ .tg-btn span { display: inline; } }
+
+        .refresh-btn {
+            background: rgba(232,0,61,0.1); border: 1px solid rgba(232,0,61,0.25);
+            color: var(--accent); padding: 7px 13px; border-radius: 8px;
+            font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif;
+            display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+        }
+        .refresh-btn:hover { background: rgba(232,0,61,0.2); box-shadow: 0 0 14px rgba(232,0,61,0.3); }
+        .refresh-btn.spin svg { animation: rotate 0.7s linear infinite; }
+        @keyframes rotate { to{transform:rotate(360deg)} }
+
+        /* MAIN */
+        main { position: relative; z-index: 5; max-width: 1240px; margin: 0 auto; padding: 28px 20px 60px; }
+        .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 3px; color: #fff; line-height: 1; }
+        .page-title span { color: var(--accent); }
+        .page-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .count-pill { background: var(--card); border: 1px solid var(--border); font-size: 12px; color: var(--text2); padding: 4px 12px; border-radius: 20px; }
+        .updated-label { font-size: 11px; color: var(--muted); }
+
+        /* FILTER TABS */
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-btn {
+            background: var(--card); border: 1px solid rgba(255,255,255,0.07);
+            color: var(--text2); padding: 6px 16px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover { border-color: rgba(232,0,61,0.4); color: var(--text); }
+        .filter-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: var(--accent); color: #fff; box-shadow: 0 0 12px rgba(232,0,61,0.35); }
+
+        /* GRID */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px,1fr)); gap: 18px; }
+
+        /* CARD */
+        .event-card {
+            background: var(--card); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px; overflow: hidden; cursor: pointer;
+            transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+            position: relative;
+        }
+        .event-card:hover { transform: translateY(-5px); border-color: rgba(232,0,61,0.35); box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(232,0,61,0.15); }
+        .event-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); opacity: 0; transition: opacity 0.22s; }
+        .event-card:hover::after { opacity: 1; }
+
+        .card-thumb { width: 100%; aspect-ratio: 16/9; background: var(--card2); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+        .event-card:hover .card-thumb img { transform: scale(1.05); }
+        .thumb-fallback { font-size: 38px; opacity: 0.18; }
+
+        .play-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.22s; }
+        .event-card:hover .play-layer { opacity: 1; }
+        .play-circle { width: 52px; height: 52px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 24px rgba(232,0,61,0.6); }
+        .play-circle svg { margin-left: 3px; }
+
+        .card-body { padding: 14px 16px 16px; }
+        .card-sport-tag { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 7px; display: flex; align-items: center; gap: 5px; }
+        .card-name { font-size: 14px; font-weight: 600; color: #fff; line-height: 1.4; margin-bottom: 10px; }
+        .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+        .card-time { font-size: 11px; color: var(--text2); display: flex; align-items: center; gap: 4px; }
+
+        .badge { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 10px; letter-spacing: 0.8px; text-transform: uppercase; }
+        .badge-live { background: rgba(232,0,61,0.15); border: 1px solid rgba(232,0,61,0.4); color: #ff5577; }
+        .badge-soon { background: rgba(244,180,0,0.1); border: 1px solid rgba(244,180,0,0.3); color: var(--gold); }
+        .badge-done { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--muted); }
+
+        /* SKELETON */
+        .skel { background: var(--card); border: 1px solid rgba(255,255,255,0.04); border-radius: 14px; overflow: hidden; animation: pulse 1.6s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:0.45}50%{opacity:0.75} }
+        .skel-img { width: 100%; aspect-ratio: 16/9; background: var(--card2); }
+        .skel-body { padding: 14px 16px; }
+        .skel-ln { height: 11px; background: var(--card2); border-radius: 6px; margin-bottom: 10px; }
+
+        /* EMPTY/ERROR */
+        .state-box { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--text2); }
+        .state-box .ico { font-size: 52px; opacity: 0.35; margin-bottom: 18px; }
+        .state-box h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+        .state-box p { font-size: 14px; line-height: 1.7; max-width: 420px; margin: 0 auto; }
+
+        /* PLAYER OVERLAY */
+        .overlay { display: none; position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.88); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 16px; }
+        .overlay.open { display: flex; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from{opacity:0}to{opacity:1} }
+
+        .modal { width: 100%; max-width: 940px; background: var(--card); border: 1px solid rgba(232,0,61,0.2); border-radius: 18px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.85); animation: popUp 0.3s cubic-bezier(0.34,1.2,0.64,1); }
+        @keyframes popUp { from{opacity:0;transform:translateY(28px)scale(0.97)}to{opacity:1;transform:translateY(0)scale(1)} }
+
+        .modal-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: var(--card2); border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px; flex-wrap: wrap; }
+        .modal-title { font-size: 15px; font-weight: 700; color: #fff; }
+        .modal-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+        .close-btn { width: 32px; height: 32px; background: rgba(255,255,255,0.08); border: none; border-radius: 50%; color: var(--text2); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+        .close-btn:hover { background: rgba(232,0,61,0.35); color: #fff; }
+
+        .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
+        .video-wrap video { position: absolute; top:0;left:0;width:100%;height:100%; background:#000; }
+
+        .vid-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.65); gap: 14px; z-index: 10; pointer-events: none; transition: opacity 0.3s; }
+        .vid-loading.hidden { opacity: 0; pointer-events: none; }
+        .spinner { width: 42px; height: 42px; border: 3px solid rgba(232,0,61,0.2); border-top-color: var(--accent); border-radius: 50%; animation: rotate 0.8s linear infinite; }
+        .vid-loading p { font-size: 13px; color: var(--text2); }
+
+        /* QUALITY BAR */
+        .qbar { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: rgba(0,0,0,0.35); border-top: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; }
+        .qlabel { font-size: 10px; color: var(--text2); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-right: 2px; }
+        .qbtn { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text2); padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Outfit', sans-serif; transition: all 0.18s; }
+        .qbtn:hover { background: rgba(232,0,61,0.15); border-color: rgba(232,0,61,0.4); color: var(--accent); }
+        .qbtn.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: var(--accent); color:#fff; box-shadow: 0 0 10px rgba(232,0,61,0.4); }
+        .qnote { margin-left: auto; font-size: 11px; color: var(--muted); }
+
+        /* TELEGRAM POPUP */
+        .tg-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.82); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; }
+        .tg-overlay.open { display: flex; animation: fadeIn 0.3s ease; }
+        .tg-popup { background: var(--card); border: 1px solid rgba(33,150,243,0.3); border-radius: 20px; padding: 36px 30px 28px; max-width: 380px; width: 100%; text-align: center; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.8); animation: popUp 0.35s cubic-bezier(0.34,1.3,0.64,1); }
+        .tg-close { position: absolute; top: 12px; right: 12px; width: 28px; height: 28px; background: rgba(255,255,255,0.07); border: none; border-radius: 50%; color: var(--text2); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .tg-close:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .tg-icon { width: 68px; height: 68px; background: linear-gradient(135deg, #2196F3, #0d47a1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 0 28px rgba(33,150,243,0.5); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+        .tg-popup h2 { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 2px; color: #fff; margin-bottom: 8px; }
+        .tg-popup p { font-size: 13px; color: var(--text2); line-height: 1.65; margin-bottom: 20px; }
+        .tg-perks { display: flex; justify-content: center; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+        .tg-perk { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 5px; }
+        .tg-perk::before { content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%; box-shadow: 0 0 5px var(--green); flex-shrink: 0; }
+        .tg-join { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: linear-gradient(135deg, #2196F3, #1565C0); color: #fff; text-decoration: none; padding: 13px; border-radius: 12px; font-weight: 700; font-size: 15px; transition: all 0.25s; box-shadow: 0 6px 20px rgba(33,150,243,0.4); }
+        .tg-join:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(33,150,243,0.6); }
+        .tg-skip { display: block; margin-top: 12px; background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; font-family: 'Outfit', sans-serif; transition: color 0.2s; }
+        .tg-skip:hover { color: var(--text2); }
+
+        /* TOAST */
+        .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px); background: var(--card2); border: 1px solid rgba(232,0,61,0.25); color: var(--text); padding: 11px 22px; border-radius: 28px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 28px rgba(0,0,0,0.55); z-index: 999; opacity: 0; transition: opacity 0.28s, transform 0.28s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        footer { position: relative; z-index: 5; text-align: center; padding: 22px; color: var(--muted); font-size: 11px; border-top: 1px solid rgba(255,255,255,0.04); letter-spacing: 0.5px; margin-top: 10px; }
+
+        @media (max-width: 580px) {
+            header { padding: 10px 14px; }
+            main { padding: 18px 12px 50px; }
+            .grid { grid-template-columns: 1fr; }
+            .brand-title { font-size: 18px; }
+            .qnote { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+    <div class="ticker">
+        <span>📺 SonyLiv Live</span>
+        <span>⚡ HD Streaming</span>
+        <span>🏆 Live Events 24/7</span>
+        <span>🔔 Join Telegram for Alerts</span>
+        <span>📺 SonyLiv Live</span>
+        <span>⚡ HD Streaming</span>
+        <span>🏆 Live Events 24/7</span>
+        <span>🔔 Join Telegram for Alerts</span>
+    </div>
+</div>
+
+<!-- HEADER -->
+<header>
+    <div class="brand">
+        <div class="logo">
+            SL
+            <div class="logo-ring"></div>
+        </div>
+        <div>
+            <div class="brand-title">Sony<span>Liv</span> Live</div>
+            <div class="brand-sub">Sayan</div>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="live-pill"><div class="live-dot"></div>Live</div>
+        <button class="tg-btn" onclick="openTg()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.94z"/></svg>
+            <span>Join Telegram</span>
+        </button>
+        <button class="refresh-btn" id="refresh-btn" onclick="fetchEvents(true)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Refresh
+        </button>
+    </div>
+</header>
+
+<!-- MAIN -->
+<main>
+    <div class="page-header">
+        <div class="page-title">Live <span>Events</span></div>
+        <div class="page-meta">
+            <span class="count-pill" id="count-pill">Loading…</span>
+            <span class="updated-label" id="updated-label"></span>
+        </div>
+    </div>
+
+    <!-- SPORT FILTER TABS -->
+    <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" onclick="filterEvents('All', this)">🏆 All</button>
+    </div>
+
+    <div class="grid" id="grid">
+        <div class="skel"><div class="skel-img"></div><div class="skel-body"><div class="skel-ln" style="width:38%"></div><div class="skel-ln" style="width:85%"></div><div class="skel-ln" style="width:60%"></div></div></div>
+        <div class="skel"><div class="skel-img"></div><div class="skel-body"><div class="skel-ln" style="width:42%"></div><div class="skel-ln" style="width:90%"></div><div class="skel-ln" style="width:55%"></div></div></div>
+        <div class="skel"><div class="skel-img"></div><div class="skel-body"><div class="skel-ln" style="width:35%"></div><div class="skel-ln" style="width:80%"></div><div class="skel-ln" style="width:65%"></div></div></div>
+    </div>
+</main>
+
+<footer>&copy; <span id="yr"></span> Cricket365 — SonyLiv Live Events by Sayan</footer>
+
+<!-- PLAYER -->
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <div class="modal-topbar">
+            <div>
+                <div class="modal-title" id="modal-title">Loading…</div>
+                <div class="modal-meta" id="modal-meta"></div>
+            </div>
+            <button class="close-btn" onclick="closePlayer()">✕</button>
+        </div>
+        <div class="video-wrap">
+            <video id="vid" controls autoplay playsinline></video>
+            <div class="vid-loading" id="vid-loading">
+                <div class="spinner"></div>
+                <p>Loading stream…</p>
+            </div>
+        </div>
+        <div class="qbar">
+            <span class="qlabel">Quality</span>
+            <button class="qbtn" onclick="setQ(240,this)">240p</button>
+            <button class="qbtn" onclick="setQ(360,this)">360p</button>
+            <button class="qbtn" onclick="setQ(480,this)">480p</button>
+            <button class="qbtn on" onclick="setQ(720,this)">720p</button>
+            <button class="qbtn" onclick="setQ(1080,this)">1080p</button>
+            <span class="qnote" id="qnote">HD · Adaptive stream</span>
+        </div>
+    </div>
+</div>
+
+<!-- TELEGRAM POPUP -->
+<div class="tg-overlay" id="tg-overlay">
+    <div class="tg-popup">
+        <button class="tg-close" onclick="closeTg()">✕</button>
+        <div class="tg-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.94z"/></svg>
+        </div>
+        <h2>Join Our Channel</h2>
+        <p>Get instant alerts for live matches, stream links &amp; sports updates!</p>
+        <div class="tg-perks">
+            <span class="tg-perk">Live Alerts</span>
+            <span class="tg-perk">Stream Links</span>
+            <span class="tg-perk">Highlights</span>
+        </div>
+        <a href="https://t.me/TestCricket18" target="_blank" rel="noopener" class="tg-join" onclick="closeTg()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.94z"/></svg>
+            Join @TestCricket18
+        </a>
+        <button class="tg-skip" onclick="closeTg()">Maybe later</button>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── CONFIG ── */
+const JSON_URL  = 'https://raw.githubusercontent.com/drmlive/sliv-live-events/main/sonyliv.json';
+const POLL_MS   = 60000;
+
+/* HLS proxy list — tried in order if direct load fails */
+const HLS_PROXIES = [
+    '',                                          /* direct first */
+    'https://cors.consumet.org/',
+    'https://proxy.cors.sh/',
+    'https://api.allorigins.win/raw?url='
+];
+
+let hls          = null;
+let lastHash     = '';
+let allEvents    = [];
+let activeFilter = 'All';
+let proxyIndex   = 0;
+
+/* ── FETCH JSON ── */
+async function fetchEvents(manual) {
+    manual = !!manual;
+    var btn = document.getElementById('refresh-btn');
+    btn.classList.add('spin');
+    try {
+        var res = await fetch(JSON_URL + '?nc=' + Date.now());
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var raw = await res.json();
+
+        /* Normalise — handle all possible structures */
+        var list = [];
+        if (Array.isArray(raw)) {
+            list = raw;
+        } else {
+            /* Try known array keys */
+            var keys = ['matches','events','data','streams','items','results','live'];
+            for (var i = 0; i < keys.length; i++) {
+                if (raw[keys[i]] && Array.isArray(raw[keys[i]])) { list = raw[keys[i]]; break; }
+            }
+            /* Fallback: find any array value */
+            if (!list.length) {
+                var found = Object.values(raw).find(function(v){ return Array.isArray(v) && v.length > 0; });
+                if (found) list = found;
+            }
+            /* Last resort: each key is an event */
+            if (!list.length) {
+                list = Object.entries(raw).map(function(e){
+                    var k = e[0], v = e[1];
+                    return (typeof v === 'object' && v !== null) ? Object.assign({_key:k}, v) : {title:k, stream_url:v};
+                }).filter(function(e){ return e.title || e.name || e.stream_url; });
+            }
+        }
+
+        var newHash = JSON.stringify(list);
+        var changed = newHash !== lastHash;
+        lastHash    = newHash;
+        allEvents   = list;
+
+        buildFilters(list);
+        renderFiltered();
+
+        document.getElementById('updated-label').textContent =
+            'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+        if (manual) toast(changed ? '🔄 Streams updated!' : '✅ Already up to date');
+        else if (changed && lastHash) toast('🔄 New streams available!');
+
+    } catch(err) {
+        renderError(err.message);
+    }
+    btn.classList.remove('spin');
+}
+
+/* ── BUILD FILTER TABS ── */
+function buildFilters(list) {
+    var sports = ['All'];
+    list.forEach(function(ev){
+        var s = ev.event_category || ev.sport || ev.category || ev.type || '';
+        if (s && sports.indexOf(s) === -1) sports.push(s);
+    });
+    var bar = document.getElementById('filter-bar');
+    var sportEmoji = {'Cricket':'🏏','Football':'⚽','Golf':'⛳','Tennis':'🎾','Basketball':'🏀','Kabaddi':'🤼','Hockey':'🏑','Badminton':'🏸','Wrestling':'🤼','Boxing':'🥊','MMA':'🥋','Formula 1':'🏎️','Motorsport':'🏎️'};
+    bar.innerHTML = sports.map(function(s){
+        var ico = s === 'All' ? '🏆' : (sportEmoji[s] || '🎯');
+        var active = s === activeFilter ? ' active' : '';
+        return '<button class="filter-btn' + active + '" onclick="filterEvents(\'' + s.replace(/'/g,"\\'") + '\', this)">' + ico + ' ' + s + '</button>';
+    }).join('');
+}
+
+/* ── FILTER ── */
+function filterEvents(sport, btn) {
+    activeFilter = sport;
+    document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    renderFiltered();
+}
+
+function renderFiltered() {
+    var list = activeFilter === 'All' ? allEvents : allEvents.filter(function(ev){
+        var s = ev.event_category || ev.sport || ev.category || ev.type || '';
+        return s === activeFilter;
+    });
+    render(list);
+}
+
+/* ── RENDER CARDS ── */
+function render(list) {
+    var grid = document.getElementById('grid');
+    document.getElementById('count-pill').textContent = list.length + ' event' + (list.length !== 1 ? 's' : '');
+
+    if (!list.length) {
+        grid.innerHTML = '<div class="state-box"><div class="ico">📭</div><h3>No events right now</h3><p>Events auto-update every 60 seconds from GitHub.</p></div>';
+        return;
+    }
+
+    var sportEmoji = {'Cricket':'🏏','Football':'⚽','Golf':'⛳','Tennis':'🎾','Basketball':'🏀','Kabaddi':'🤼','Hockey':'🏑','Badminton':'🏸','Wrestling':'🤼','Boxing':'🥊','MMA':'🥋','Formula 1':'🏎️','Motorsport':'🏎️'};
+    var html = '';
+
+    for (var i = 0; i < list.length; i++) {
+        var ev      = list[i];
+        var title   = ev.title || ev.name || ev.match_name || ev.event || 'Live Event';
+        var stream  = ev.adfree_url || ev.stream_url || ev.hls_url || ev.url || ev.m3u8 || ev.hls || ev.stream || ev.dai_url || '';
+        var sport   = ev.event_category || ev.sport || ev.category || ev.type || 'Sport';
+        var rawThumb = ev.src || ev.thumbnail || ev.image || ev.poster || ev.banner || ev.logo || '';
+        var status  = String(ev.status || ev.state || '').toLowerCase();
+        var time    = ev.startTime || ev.start_time || ev.time || ev.date || ev.start || '';
+        var venue   = ev.event_name || ev.venue || ev.tournament || ev.league || ev.location || '';
+        var sportIcon = sportEmoji[sport] || '🎯';
+
+        var badge;
+        if (status === 'live' || status === 'ongoing') {
+            badge = '<span class="badge badge-live">&#9679; Live</span>';
+        } else if (status.indexOf('upcom') > -1 || status.indexOf('sched') > -1) {
+            badge = '<span class="badge badge-soon">&#9201; Soon</span>';
+        } else if (status.indexOf('end') > -1 || status.indexOf('complet') > -1 || status.indexOf('finish') > -1) {
+            badge = '<span class="badge badge-done">Ended</span>';
+        } else if (stream) {
+            badge = '<span class="badge badge-live">&#9679; Live</span>';
+        } else {
+            badge = '';
+        }
+
+        /* Proxy thumbnail to bypass hotlink blocking */
+        var proxied = rawThumb
+            ? 'https://wsrv.nl/?url=' + encodeURIComponent(rawThumb) + '&w=480&h=270&fit=cover&output=webp&n=-1'
+            : '';
+        var thumbHtml = proxied
+            ? '<img src="' + proxied + '" alt="' + esc(title) + '" loading="lazy" onerror="this.parentNode.innerHTML=\'<div class=thumb-fallback>📺</div>\'">'
+            : '<div class="thumb-fallback">📺</div>';
+
+        var timeStr   = time ? fmtTime(time) : 'Live Now';
+        var metaParts = [sport, venue, timeStr].filter(Boolean).join(' · ');
+
+        html += '<div class="event-card" onclick="openPlayer(\'' + esc(stream) + '\',\'' + esc(title) + '\',\'' + esc(metaParts) + '\')">'
+              + '<div class="card-thumb">' + thumbHtml
+              + '<div class="play-layer"><div class="play-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div></div>'
+              + '<div class="card-body">'
+              + '<div class="card-sport-tag">' + sportIcon + ' ' + esc(sport) + '</div>'
+              + '<div class="card-name">' + esc(title) + '</div>'
+              + '<div class="card-footer"><span class="card-time"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ' + timeStr + '</span>' + badge + '</div>'
+              + '</div></div>';
+    }
+    grid.innerHTML = html;
+}
+
+function renderError(msg) {
+    document.getElementById('grid').innerHTML = '<div class="state-box"><div class="ico">⚠️</div><h3>Couldn\'t load events</h3><p>' + esc(msg) + '<br><br>Retrying automatically…</p></div>';
+    document.getElementById('count-pill').textContent = 'Error';
+}
+
+/* ── PLAYER ── */
+function openPlayer(url, title, meta) {
+    if (!url || url === 'undefined' || url.length < 5) {
+        toast('⚠️ No stream URL for this event yet');
+        return;
+    }
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-meta').textContent  = meta;
+    document.getElementById('overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    proxyIndex = 0;
+    loadHLS(url);
+}
+
+function closePlayer() {
+    document.getElementById('overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    stopStream();
+}
+
+function stopStream() {
+    var vid = document.getElementById('vid');
+    if (hls) { hls.destroy(); hls = null; }
+    vid.pause(); vid.src = '';
+}
+
+function loadHLS(url) {
+    var vid     = document.getElementById('vid');
+    var loading = document.getElementById('vid-loading');
+    loading.classList.remove('hidden');
+    stopStream();
+
+    var finalUrl = (HLS_PROXIES[proxyIndex] || '') + url;
+
+    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+        hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+        hls.loadSource(finalUrl);
+        hls.attachMedia(vid);
+        hls.on(Hls.Events.MANIFEST_PARSED, function() {
+            loading.classList.add('hidden');
+            vid.play().catch(function(){});
+        });
+        hls.on(Hls.Events.ERROR, function(e, d) {
+            if (d.fatal) {
+                loading.classList.add('hidden');
+                proxyIndex++;
+                if (proxyIndex < HLS_PROXIES.length) {
+                    toast('Trying proxy ' + proxyIndex + '…');
+                    loadHLS(url);
+                } else {
+                    toast('⚠️ Stream unavailable — no URL from repo yet');
+                }
+            }
+        });
+    } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+        vid.src = finalUrl;
+        vid.addEventListener('loadedmetadata', function() {
+            loading.classList.add('hidden');
+            vid.play().catch(function(){});
+        }, {once:true});
+    } else {
+        loading.classList.add('hidden');
+        toast('HLS not supported in this browser');
+    }
+}
+
+function setQ(q, btn) {
+    document.querySelectorAll('.qbtn').forEach(function(b){ b.classList.remove('on'); });
+    btn.classList.add('on');
+    var labels = {240:'Low · 240p',360:'Standard · 360p',480:'SD · 480p',720:'HD · 720p',1080:'Full HD · 1080p'};
+    document.getElementById('qnote').textContent = (labels[q] || '') + ' selected';
+}
+
+/* ── TELEGRAM ── */
+function openTg() { document.getElementById('tg-overlay').classList.add('open'); }
+function closeTg() {
+    document.getElementById('tg-overlay').classList.remove('open');
+    localStorage.setItem('tg_sonyliv_shown','1');
+}
+
+/* ── UTILS ── */
+function fmtTime(t) {
+    try { var d = new Date(t); if (isNaN(d.getTime())) return String(t); return d.toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); } catch(e){ return String(t); }
+}
+function esc(s) {
+    return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function(){ t.classList.remove('show'); }, 3000);
+}
+
+/* ── CLOSE ON BG CLICK ── */
+document.getElementById('overlay').addEventListener('click', function(e){ if(e.target===this) closePlayer(); });
+document.getElementById('tg-overlay').addEventListener('click', function(e){ if(e.target===this) closeTg(); });
+
+/* ── INIT ── */
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    fetchEvents(false);
+    setInterval(function(){ fetchEvents(false); }, POLL_MS);
+
+    if (!localStorage.getItem('tg_sonyliv_shown')) {
+        setTimeout(function(){ document.getElementById('tg-overlay').classList.add('open'); }, 4000);
+    }
+});
+</script>
+</body>
+</html>
