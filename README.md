@@ -2,7 +2,7 @@
 
 # 📺 🎯 SonyLiv Live Events Auto-Sync
 
-### by **Sayan**
+### by **Sayan Pal**
 
 ✨ A high-availability, fully automated data synchronization project ensuring the SonyLiv live events list is always fresh and reliable.
 
@@ -96,7 +96,7 @@ We encourage developers and enthusiasts to:
 
 <div align="center">
 
-**Sayan**
+**Sayan Pal**
 
 [![Telegram](https://img.shields.io/badge/Telegram-Join%20Channel-2196F3?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/TestCricket18)
 
